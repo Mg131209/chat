@@ -1,9 +1,9 @@
 import { Component, inject, OnDestroy, OnInit, signal, WritableSignal } from '@angular/core';
-import { ChatService } from '../chat.service';
-import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { NgModule } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { ChatService } from '../chat.service';
+import { EncryptionService } from '../encryption-service';
 
 @Component({
   selector: 'app-home',
@@ -21,35 +21,46 @@ export class Home implements OnInit, OnDestroy {
 
   router: Router = inject(Router);
 
-  constructor(private chatService: ChatService) {}
+  constructor(
+    private chatService: ChatService,
+    private encryptionService: EncryptionService,
+  ) {}
 
   async ngOnInit() {
     this.token = sessionStorage.getItem('token');
     this.username = sessionStorage.getItem('username');
 
-    console.log(await this.validateToken());
+    if (localStorage.getItem('publicKey') && localStorage.getItem('privateKey')) {
+      await this.encryptionService.loadKeyPair();
+    } else {
+      await this.encryptionService.generateKeyPair();
+      await this.encryptionService.loadKeyPair();
+    }
     if (!(await this.validateToken())) {
-      console.log('tokne invalid redirecting to login...');
       this.router.navigate(['/login']);
     } else {
       this.chatService.connect(this.token!);
     }
 
     this.subs.push(
-      this.chatService.onMessage().subscribe((msg) => {
-        this.messages.set([...this.messages(), msg]);
-        console.log(this.messages());
+      this.chatService.onMessage().subscribe(async (msg) => {
+        this.messages.set([
+          ...this.messages(),
+          { ...msg, message: await this.encryptionService.decryptMessage(msg.message) },
+        ]);
+        console.log;
+        console.log(await this.encryptionService.decryptMessage(msg.message));
       }),
-      this.chatService.onUserDisconnect().subscribe((msg) => {
+      this.chatService.onUserDisconnect().subscribe(async (msg) => {
         this.messages.set([...this.messages(), { system: msg }]);
-        console.log(this.messages());
+        console.log(msg);
       }),
     );
   }
 
-  sendMessage(): void {
+  async sendMessage() {
     if (this.messageInput.trim()) {
-      this.chatService.sendMessage(this.messageInput);
+      await this.chatService.sendMessage(this.messageInput, 'd6756c91-cd86-45b3-b3df-b1742caa4cd9');
       this.messageInput = '';
     }
   }
@@ -66,7 +77,6 @@ export class Home implements OnInit, OnDestroy {
       headers: { authorization: 'Bearer ' + this.token },
     });
     if (resp.status === 401 || resp.status === 500) {
-      console.log('token invalid');
       return false;
     }
     return true;

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
+import { EncryptionService } from './encryption-service';
 
 @Injectable({
   providedIn: 'root',
@@ -9,7 +10,7 @@ export class ChatService {
   private socket!: Socket;
   apiUrl = 'http://localhost:3000';
   websocketUrl = 'http://localhost:3002';
-  constructor() {}
+  constructor(private encryptionService: EncryptionService) {}
   connect(token: string): void {
     this.socket = io(this.websocketUrl, {
       extraHeaders: {
@@ -30,8 +31,12 @@ export class ChatService {
     });
   }
 
-  sendMessage(message: string): void {
-    this.socket.emit('message', message);
+  async sendMessage(message: string, targetUserId: string) {
+    const messageObject = {
+      userId: targetUserId,
+      message: await this.encryptionService.encryptMessage(message),
+    };
+    this.socket.emit('message', JSON.stringify(messageObject));
   }
 
   onMessage(): Observable<any> {
