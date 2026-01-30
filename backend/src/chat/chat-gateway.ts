@@ -1,4 +1,3 @@
-import { InjectRepository } from '@nestjs/typeorm';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -7,8 +6,6 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { User } from 'src/user/user.entity';
-import { Repository } from 'typeorm';
 import { UserService } from '../user/user.service';
 import { ChatService } from './chat.service';
 import { ConnectUserDto } from './dto/conect-user.dto';
@@ -22,14 +19,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private chatService: ChatService,
     private userService: UserService,
-    @InjectRepository(User) userRepository: Repository<User>,
   ) {}
 
   async handleConnection(client: Socket) {
     const raw = client.handshake.headers['auth'];
     const token = Array.isArray(raw) ? raw[0] : raw;
-    if (!token) {
-      client.emit('reply', 'no token provided');
+    if (!token || !(await this.chatService.validateToken(token))) {
+      client.emit('reply', 'un authorized');
     } else {
       const id = this.chatService.getIdFromToken(token);
       const connectedUser = await this.chatService.getConnectedUser(
@@ -39,7 +35,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (connectedUser) {
         this.connectedUsers.push(connectedUser);
       } else {
-        client.emit('reply', 'user not found');
+        client.emit('reply', 'token incorect');
       }
     }
   }
@@ -47,7 +43,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleDisconnect(client: Socket) {
     const username = this.getConnectedUser(client.id)?.username;
     this.server.emit('on_user_disconnect', `User ${username} left`);
-    console.log(`User ${username} left`);
   }
 
   @SubscribeMessage('message')

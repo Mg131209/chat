@@ -36,7 +36,6 @@ export class ChatService {
     connectionId: string,
   ): Promise<ConnectUserDto | null> {
     const user = await this.userRepository.findOne({ where: { id } });
-
     if (!user) {
       return null;
     }
@@ -46,5 +45,14 @@ export class ChatService {
       connectionId: connectionId,
     };
     return connectedUser;
+  }
+
+  async validateToken(token) {
+    try {
+      const tokenPayload = await this.jwtService.verifyAsync(token);
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }

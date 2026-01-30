@@ -1,15 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import path from 'path';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { User } from 'src/user/user.entity';
+
+import * as bcrypt from 'bcrypt';
+import { Repository } from 'typeorm';
 
 type SignInData = { id: string; username: string };
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    @InjectRepository(User) private readonly userRepository,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
   async validateUser(user: CreateUserDto) {
@@ -17,10 +25,12 @@ export class AuthService {
       where: { username: user.username },
     });
     if (!userData) {
-      throw new NotFoundException('user not found');
+      throw new UnauthorizedException();
     }
-
-    return this.signIn({ id: userData.id, username: userData.username });
+    if (await bcrypt.compare(user.password, userData.password)) {
+      return this.signIn({ id: userData.id, username: userData.username });
+    }
+    throw new UnauthorizedException();
   }
 
   async signIn(user: SignInData) {
@@ -33,5 +43,7 @@ export class AuthService {
     };
   }
 
-  
+  async validateToken(token: string) {
+    return this.jwtService.verifyAsync(token);
+  }
 }
