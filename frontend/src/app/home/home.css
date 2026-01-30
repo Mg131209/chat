@@ -1,0 +1,34 @@
+.screen-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column-reverse;
+}
+input {
+  margin-bottom: 50px;
+  margin-inline: 20px;
+  height: 50px;
+  border-radius: 10px;
+  background-color: rgba(128, 128, 128, 0.192);
+}
+.message-element {
+  max-width: 70vw;
+  margin-inline: 20px;
+  margin-bottom: 10px;
+  background-color: rgba(0, 255, 255, 0.397);
+  padding: 5px;
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+p {
+  margin: 5px;
+}
+.send {
+  background-color: rgb(167, 255, 109);
+  margin-left: auto;
+}
+.system {
+  background-color: red;
+}

@@ -1,0 +1,7 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  max-width: 20vw;
+  background-color: rgba(128, 128, 128, 0.479);
+  padding: 20px;
+}
