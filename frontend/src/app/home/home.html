@@ -1,24 +1,27 @@
-<div class="screen-container">
-  <input type="text" [(ngModel)]="messageInput" (keydown.enter)="sendMessage()" />
-  <div class="chat-container">
-    <div class="message-list">
-      @for (msg of messages(); track $index) {
-        @if (msg.username === username) {
-          <div class="message-element send">
-            <p>{{ msg.username }}</p>
-            <p>{{ msg.message }}</p>
-          </div>
-        } @else if (msg.system) {
-          <div class="message-element system">
-            <p>{{ msg.system }}</p>
-          </div>
-        } @else {
-          <div class="message-element">
-            <p>{{ msg.username }}</p>
-            <p>{{ msg.message }}</p>
-          </div>
+<div class="component-container">
+  <app-chat-bar></app-chat-bar>
+  <div class="screen-container">
+    <input type="text" [(ngModel)]="messageInput" (keydown.enter)="sendMessage()" />
+    <div class="chat-container">
+      <div class="message-list">
+        @for (msg of messages(); track $index) {
+          @if (msg.username === username) {
+            <div class="message-element send">
+              <p>{{ msg.username }}</p>
+              <p>{{ msg.message }}</p>
+            </div>
+          } @else if (msg.system) {
+            <div class="message-element system">
+              <p>{{ msg.system }}</p>
+            </div>
+          } @else {
+            <div class="message-element">
+              <p>{{ msg.username }}</p>
+              <p>{{ msg.message }}</p>
+            </div>
+          }
         }
-      }
+      </div>
     </div>
   </div>
 </div>

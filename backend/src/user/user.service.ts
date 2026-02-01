@@ -30,4 +30,7 @@ export class UserService {
     const data = await this.userRepository.findOne({ where: { id } });
     return data;
   }
+  async getAll() {
+    return this.userRepository.find();
+  }
 }

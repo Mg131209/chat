@@ -6,15 +6,14 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private authService: AuthService) {}
   @Get()
-  authorizeUser(@Headers() headers) {
-    console.log(headers);
-    return this.authService.validateToken(headers.authorization.split(' ')[1]);
+  authorizeUser(@Headers('authorization') token: string) {
+    return this.authService.validateToken(token.split(' ')[1]);
   }
   @Post('/login')
   validateUser(@Body() user: CreateUserDto) {
     try {
       return this.authService.validateUser(user);
-    } catch (error) {
+    } catch {
       return false;
     }
   }

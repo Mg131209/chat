@@ -1,1 +1,7 @@
-<p>chat-bar works!</p>
+<div class="side-bar-container">
+  @for (user of users; track $index) {
+    <div class="chat-element" (click)="selectChat(user.id)">
+      <p>{{ user.username }}</p>
+    </div>
+  }
+</div>

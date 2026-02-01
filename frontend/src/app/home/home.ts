@@ -4,10 +4,11 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ChatService } from '../chat.service';
 import { EncryptionService } from '../encryption-service';
+import { ChatBar } from '../chat-bar/chat-bar';
 
 @Component({
   selector: 'app-home',
-  imports: [FormsModule],
+  imports: [FormsModule, ChatBar],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -16,7 +17,6 @@ export class Home implements OnInit, OnDestroy {
   messageInput = '';
   private subs: Subscription[] = [];
 
-  token: string | null = '';
   username: string | null = '';
 
   router: Router = inject(Router);
@@ -27,7 +27,7 @@ export class Home implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit() {
-    this.token = sessionStorage.getItem('token');
+    this.chatService.token = sessionStorage.getItem('token');
     this.username = sessionStorage.getItem('username');
 
     if (localStorage.getItem('publicKey') && localStorage.getItem('privateKey')) {
@@ -39,7 +39,7 @@ export class Home implements OnInit, OnDestroy {
     if (!(await this.validateToken())) {
       this.router.navigate(['/login']);
     } else {
-      this.chatService.connect(this.token!);
+      this.chatService.connect(this.chatService.token!);
     }
 
     this.subs.push(
@@ -60,7 +60,7 @@ export class Home implements OnInit, OnDestroy {
 
   async sendMessage() {
     if (this.messageInput.trim()) {
-      await this.chatService.sendMessage(this.messageInput, 'd6756c91-cd86-45b3-b3df-b1742caa4cd9');
+      await this.chatService.sendMessage(this.messageInput);
       this.messageInput = '';
     }
   }
@@ -70,11 +70,11 @@ export class Home implements OnInit, OnDestroy {
   }
 
   async validateToken() {
-    if (!this.token) {
+    if (!this.chatService.token) {
       return null;
     }
     const resp = await fetch(this.chatService.apiUrl + '/auth', {
-      headers: { authorization: 'Bearer ' + this.token },
+      headers: { authorization: 'Bearer ' + this.chatService.token },
     });
     if (resp.status === 401 || resp.status === 500) {
       return false;

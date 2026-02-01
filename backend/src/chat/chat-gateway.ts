@@ -24,24 +24,37 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: Socket) {
     const raw = client.handshake.headers['auth'];
     const token = Array.isArray(raw) ? raw[0] : raw;
+
     if (!token || !(await this.chatService.validateToken(token))) {
-      client.emit('reply', 'un authorized');
-    } else {
-      const id = this.chatService.getIdFromToken(token);
-      const connectedUser = await this.chatService.getConnectedUser(
-        id,
-        client.id,
-      );
-      if (connectedUser) {
-        this.connectedUsers.push(connectedUser);
-      } else {
-        client.emit('reply', 'token incorect');
-      }
+      client.emit('reply', 'unauthorized');
+      client.disconnect();
+      return;
     }
+
+    const userId = this.chatService.getIdFromToken(token);
+    const connectedUser = await this.chatService.getConnectedUser(
+      userId,
+      client.id,
+    );
+
+    if (!connectedUser) {
+      client.emit('reply', 'token incorrect');
+      client.disconnect();
+      return;
+    }
+
+    this.connectedUsers = this.connectedUsers.filter(
+      (user) => user.userId !== userId,
+    );
+
+    this.connectedUsers.push(connectedUser);
   }
 
   handleDisconnect(client: Socket) {
     const username = this.getConnectedUser(client.id)?.username;
+    this.connectedUsers = this.connectedUsers.filter(
+      (user) => user.connectionId !== client.id,
+    );
     this.server.emit('on_user_disconnect', `User ${username} left`);
   }
 
@@ -51,16 +64,32 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!user) {
       await this.handleConnection(client);
     } else {
+      const messageObject = JSON.parse(inputMessage);
+      const targetUser = messageObject.userId;
+      const targetSession = this.getSessionIdFromUser(targetUser);
+      if (!targetSession) {
+        client.emit('reply', 'target user not found');
+        return;
+      }
+
       const outputMessage: MessageDto = {
-        message: inputMessage,
+        message: messageObject.message,
         username: user.username,
         userId: user.userId,
       };
-      this.server.emit('message', outputMessage);
+      this.server.to(targetSession).emit('message', outputMessage);
+      client.emit('message', outputMessage);
     }
   }
   getConnectedUser(id): ConnectUserDto | undefined {
     const user = this.connectedUsers.find((user) => user.connectionId === id);
     return user;
+  }
+  getSessionIdFromUser(userId: string) {
+    const sessionId = this.connectedUsers.find(
+      (user) => user.userId === userId,
+    )?.connectionId;
+
+    return sessionId;
   }
 }

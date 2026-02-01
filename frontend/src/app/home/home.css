@@ -2,6 +2,7 @@
   height: 100vh;
   display: flex;
   flex-direction: column-reverse;
+  width: 100%;
 }
 input {
   margin-bottom: 50px;
@@ -35,4 +36,9 @@ p {
 .chat-container {
   padding-top: 20px;
   overflow-y: scroll;
+  width: 100%;
+}
+.component-container {
+  display: flex;
+  width: 100vw;
 }

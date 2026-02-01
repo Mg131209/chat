@@ -10,6 +10,9 @@ export class ChatService {
   private socket!: Socket;
   apiUrl = 'http://localhost:3000';
   websocketUrl = 'http://localhost:3002';
+
+  token: string | null = '';
+  selectedChatId: string = '';
   constructor(private encryptionService: EncryptionService) {}
   connect(token: string): void {
     this.socket = io(this.websocketUrl, {
@@ -31,9 +34,9 @@ export class ChatService {
     });
   }
 
-  async sendMessage(message: string, targetUserId: string) {
+  async sendMessage(message: string) {
     const messageObject = {
-      userId: targetUserId,
+      userId: this.selectedChatId,
       message: await this.encryptionService.encryptMessage(message),
     };
     this.socket.emit('message', JSON.stringify(messageObject));
