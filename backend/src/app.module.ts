@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { User } from './user/user.entity';
 import { AuthModule } from './auth/auth.module';
+import { Message } from './chat/message.entity';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -15,7 +16,7 @@ import { AuthModule } from './auth/auth.module';
       username: 'root',
       password: 'root',
       database: 'chat',
-      entities: [User],
+      entities: [User, Message],
       synchronize: true,
     }),
     ChatModule,

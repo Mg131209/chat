@@ -79,6 +79,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       };
       this.server.to(targetSession).emit('message', outputMessage);
       client.emit('message', outputMessage);
+
+      console.log(outputMessage);
     }
   }
   getConnectedUser(id): ConnectUserDto | undefined {

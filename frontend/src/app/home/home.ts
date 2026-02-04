@@ -22,7 +22,7 @@ export class Home implements OnInit, OnDestroy {
   router: Router = inject(Router);
 
   constructor(
-    private chatService: ChatService,
+    public chatService: ChatService,
     private encryptionService: EncryptionService,
   ) {}
 
@@ -48,7 +48,7 @@ export class Home implements OnInit, OnDestroy {
           ...this.messages(),
           { ...msg, message: await this.encryptionService.decryptMessage(msg.message) },
         ]);
-        console.log;
+        console.log(msg);
         console.log(await this.encryptionService.decryptMessage(msg.message));
       }),
       this.chatService.onUserDisconnect().subscribe(async (msg) => {

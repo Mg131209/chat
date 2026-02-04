@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal, WritableSignal } from '@angular/core';
 import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { EncryptionService } from './encryption-service';
@@ -12,7 +12,7 @@ export class ChatService {
   websocketUrl = 'http://localhost:3002';
 
   token: string | null = '';
-  selectedChatId: string = '';
+  selectedChatId: WritableSignal<string> = signal('');
   constructor(private encryptionService: EncryptionService) {}
   connect(token: string): void {
     this.socket = io(this.websocketUrl, {
@@ -36,9 +36,11 @@ export class ChatService {
 
   async sendMessage(message: string) {
     const messageObject = {
-      userId: this.selectedChatId,
+      userId: this.selectedChatId(),
       message: await this.encryptionService.encryptMessage(message),
     };
+
+    console.log('seding message ', messageObject);
     this.socket.emit('message', JSON.stringify(messageObject));
   }
 

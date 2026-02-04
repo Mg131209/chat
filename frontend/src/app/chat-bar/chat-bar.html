@@ -1,7 +1,13 @@
 <div class="side-bar-container">
   @for (user of users; track $index) {
-    <div class="chat-element" (click)="selectChat(user.id)">
-      <p>{{ user.username }}</p>
-    </div>
+    @if (user.id === selectedUserId) {
+      <div class="chat-element selected" (click)="selectChat(user.id)">
+        <p>{{ user.username }}</p>
+      </div>
+    } @else {
+      <div class="chat-element" (click)="selectChat(user.id)">
+        <p>{{ user.username }}</p>
+      </div>
+    }
   }
 </div>

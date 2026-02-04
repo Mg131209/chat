@@ -11,6 +11,7 @@ type User = { username: string; id: string };
 export class ChatBar implements OnInit {
   constructor(private chatService: ChatService) {}
 
+  selectedUserId = '';
   users: User[] = [];
   async ngOnInit() {
     const resp = await fetch(this.chatService.apiUrl + '/user', {
@@ -18,9 +19,12 @@ export class ChatBar implements OnInit {
     });
 
     this.users = await resp.json();
+    this.users = this.users.filter((user) => user.username !== sessionStorage.getItem('username'));
+    this.chatService.selectedChatId.set(this.users[0].id);
   }
 
   selectChat(id: string) {
-    this.chatService.selectedChatId = id;
+    this.selectedUserId = id;
+    this.chatService.selectedChatId.set(id);
   }
 }

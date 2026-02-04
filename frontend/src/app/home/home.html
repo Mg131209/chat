@@ -14,7 +14,7 @@
             <div class="message-element system">
               <p>{{ msg.system }}</p>
             </div>
-          } @else {
+          } @else if (msg.userId === chatService.selectedChatId()) {
             <div class="message-element">
               <p>{{ msg.username }}</p>
               <p>{{ msg.message }}</p>

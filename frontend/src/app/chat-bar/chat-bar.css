@@ -7,6 +7,18 @@
   flex-direction: column;
   align-items: center;
 }
+
+.chat-element:hover {
+  cursor: pointer;
+}
 p {
   margin: 0;
+}
+.chat-element {
+  margin-block: 5px;
+  padding: 3px;
+  border-radius: 5px;
+}
+.selected {
+  background-color: rgb(195, 195, 195);
 }
